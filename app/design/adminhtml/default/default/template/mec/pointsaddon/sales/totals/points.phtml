@@ -1,0 +1,11 @@
+
+<?php if ($this->getOrder()->getMecpointTotal()): ?>
+    <tr>
+        <td class="label">
+            <?php echo Mage::helper('sales')->__('Points') ?>
+        </td>
+        <td>
+            <?php echo $this->getOrder()->getMecpointTotal(); ?>
+        </td>
+    </tr>
+<?php endif; ?>

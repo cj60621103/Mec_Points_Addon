@@ -1,0 +1,108 @@
+<div class="entry-edit">
+	<div class="entry-edit-head">
+		<h4 class="icon-head head-edit-form fieldset-legend"><?php echo $this->__('Points'); ?></h4>
+	</div>
+	
+	
+	<div class="fieldset fieldset-wide">
+		<div class="hor-scroll">
+			<table class="form-list" cellspacing="0">
+				<tbody>
+					<tr>
+						<td class="label"><?php echo $this->__('Points Set'); ?></td>
+						<td class="grid tier" colspan="10">
+							 <table cellspacing="0" class="data border" id="tiers_points">
+								
+								<!--<col width="135" />-->
+								<col width="135" />
+								<col width="95" />
+								<col width="95" />
+								<col width="1" />
+								 <thead>
+									<tr class="headings">
+										<!--<th><?php echo Mage::helper('sales')->__('Website') ?></th>-->
+										<th><?php echo Mage::helper('catalog')->__('Customer Group') ?></th>
+										<th><?php echo Mage::helper('catalog')->__('points') ?></th>
+										<th><?php echo Mage::helper('catalog')->__('Price') ?></th>
+										<th class="last"><?php echo Mage::helper('catalog')->__('Action') ?></th>
+									</tr>
+								</thead>
+								
+								<tbody id="tier_points_container"></tbody>
+								<tfoot>
+									<tr>
+										<td></td>
+										<td colspan="4" class="a-right">
+										<button style="" onclick="return tierPointsControl.addItem()" class="scalable add" type="button" title="Add Tier"><span><span><span><?php echo $this->__('Add Tier Points'); ?></span></span></span></button>
+										</td>
+									</tr>
+								</tfoot>
+							 </table>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+var tierPointsRowTemplate = '<tr>'
+	+ '<td><select class="input-text custgroup required-entry" name="points[{{index}}][cust_group]" id="tier_points_row_{{index}}_cust_group">'
+    <?php foreach ($this->getCustomerGroups() as $_groupId=>$_groupName): ?>
+    + '<option value="<?php echo $_groupId ?>"><?php echo Mage::helper('core')->jsQuoteEscape($this->escapeHtml($_groupName)) ?></option>'
+    <?php endforeach ?>
+    + '</select></td>'
+	+ '<td class="nobr"><input class="input-text required-entry validate-greater-than-zero" type="text" name="points[{{index}}][points_count]" value="{{points}}" id="tier_points_row_{{index}}_point" />'
+	+ '<td><input class="input-text required-entry validate-zero-or-greater" type="text" name="points[{{index}}][price]" value="{{price}}" id="tier_points_row_{{index}}_price" /></td>'
+	+ '<td class="last"><input type="hidden" name="points[{{index}}][delete]" class="delete" value="" id="tier_points_row_{{index}}_delete" />'
+	+ '<input type="hidden" name="points[{{index}}][setid]" class="delete" value="{{setid}}" id="tier_points_row_{{index}}_setid" />'
+	+ '<button title="<?php echo Mage::helper('catalog')->__("Delete Tier") ?>" type="button" class="scalable delete icon-btn delete-product-option" id="tier_points_row_{{index}}_delete_button" onclick="return tierPointsControl.deleteItem(event);">'
+    + '<span><span><span><?php echo Mage::helper('catalog')->__("Delete") ?></span></span></span></button></td>'
+    + '</tr>';
+
+var tierPointsControl = {
+	template: new Template(tierPointsRowTemplate, new RegExp('(^|.|\\r|\\n)({{\\s*(\\w+)\\s*}})', "")),
+	itemsCount: 0,
+	addItem : function () {
+		
+		var data = {
+           
+            group: '<?php echo $this->getDefaultCustomerGroup() ?>',
+            points: '',
+            price: '',
+            readOnly: false,
+            index: this.itemsCount++
+        };
+		 if(arguments.length >= 4) {
+			data.setid     = arguments[0]
+            data.group      = arguments[1];
+            data.points     = arguments[2];
+            data.price      = arguments[3];
+        }
+		
+		
+		Element.insert($('tier_points_container'), {
+            bottom : this.template.evaluate(data)
+        });
+		
+		$('tier_points_row_' + data.index + '_cust_group').value = data.group;
+		$('tier_points_container').select('input', 'select').each(function(el){ Event.observe(el, 'change', el.setHasChanges.bind(el)); });
+	},
+	
+	deleteItem: function(event) {
+        var tr = Event.findElement(event, 'tr');
+        if (tr) {
+            Element.select(tr, '.delete').each(function(elem){elem.value='1'});
+            Element.select(tr, ['input', 'select']).each(function(elem){elem.hide()});
+            Element.hide(tr);
+            Element.addClassName(tr, 'no-display template');
+        }
+        return false;
+    }
+};
+<?php foreach ($this->getValues() as $_item): ?>
+tierPointsControl.addItem('<?php echo $_item->getId(); ?>', '<?php echo $_item->getCustomerGroupId(); ?>', '<?php echo $_item->getPoints(); ?>', '<?php echo $_item->getBasePrice(); ?>');
+<?php endforeach; ?>	
+//]]>
+</script>
